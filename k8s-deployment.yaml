@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aks-quiz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aks-quiz
+  template:
+    metadata:
+      labels:
+        app: aks-quiz
+    spec:
+      containers:
+      - name: aks-quiz
+        image: aksquizacr.azurecr.io/aks-quiz:latest  # dynamic tag updated by pipeline
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aks-quiz-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: aks-quiz
+  ports:
+  - port: 80
+    targetPort: 80

@@ -1,0 +1,72 @@
+name: AKS Quiz - CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: aks-quiz
+  ACR_NAME: ${{ secrets.ACR_NAME }}
+  AKS_RG: ${{ secrets.AKS_RESOURCE_GROUP }}
+  AKS_CLUSTER: ${{ secrets.AKS_CLUSTER_NAME }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # ------------------------------
+      # 1. Login to Azure
+      # ------------------------------
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # ------------------------------
+      # 2. Build Docker Image
+      # ------------------------------
+      - name: Build Docker image
+        run: |
+          docker build -t $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.run_number }} .
+
+      # ------------------------------
+      # 3. ACR Login & Push
+      # ------------------------------
+      - name: Azure Container Registry Login
+        run: |
+          az acr login --name $ACR_NAME
+
+      - name: Push Image to ACR
+        run: |
+          docker push $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.run_number }}
+
+      # ------------------------------
+      # 4. Get AKS Credentials
+      # ------------------------------
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials --resource-group $AKS_RG --name $AKS_CLUSTER --overwrite-existing
+
+      # ------------------------------
+      # 5. Update Kubernetes YAML with new image
+      # ------------------------------
+      - name: Substitute image tag
+        run: |
+          sed -i "s#image: .*#image: $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.run_number }}#" k8s-deployment.yaml
+
+      # ------------------------------
+      # 6. Deploy to AKS
+      # ------------------------------
+      - name: Deploy to AKS
+        uses: azure/k8s-deploy@v5
+        with:
+          namespace: default
+          manifests: |
+            k8s-deployment.yaml
+          images: |
+            $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.run_number }}
