@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AKS - Container Orchestration MCQs</title>
+<style>
+:root {
+  --bg: linear-gradient(135deg, #0f172a 0%, #0b3d91 50%, #0b6fb3 100%);
+  --accent: #7c3aed;
+  --accent2: #06b6d4;
+  --correct: #16a34a;
+  --wrong: #ef4444;
+  --text: #e6eef8;
+  --muted: rgba(255,255,255,0.7);
+}
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 10px;
+}
+.quiz-box {
+  width: 800px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px);
+}
+h1 {
+  text-align: center;
+  color: white;
+  margin-top: 0;
+}
+.progress {
+  height: 8px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.progress div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  width: 0%;
+  transition: width 0.4s ease;
+}
+.question {
+  font-size: 18px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.choice {
+  background: rgba(255,255,255,0.05);
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.choice:hover { background: rgba(255,255,255,0.12); }
+.choice.correct {
+  background: rgba(22,163,74,0.2);
+  border-color: var(--correct);
+  color: #b6f0c0;
+}
+.choice.wrong {
+  background: rgba(239,68,68,0.2);
+  border-color: var(--wrong);
+  color: #fca5a5;
+}
+.btn {
+  margin-top: 20px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  float: right;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.result {
+  text-align: center;
+  display: none;
+}
+.result h2 { margin: 10px 0; }
+.result button {
+  background: var(--accent);
+  border: none;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+</style>
+</head>
+<body>
+<div class="quiz-box">
+  <h1>AKS - Advanced MCQs</h1>
+  <div class="progress"><div id="progressBar"></div></div>
+  <div id="quiz">
+    <div id="questionBox" class="question"></div>
+    <div id="choicesBox" class="choices"></div>
+    <button id="nextBtn" class="btn" disabled>Next →</button>
+  </div>
+  <div id="result" class="result">
+    <h2>Your Score: <span id="scoreText"></span></h2>
+    <button id="retryBtn">Retry Quiz</button>
+  </div>
+</div>
+
+<script>
+const quizData = [
+  {q:"What is the primary role of Kubernetes in containerized environments?",
+   choices:["Build container images automatically","Orchestrate and manage containerized workloads dynamically","Store application logs in cloud storage","Provide hardware virtualization for virtual machines"],
+   correct:1},
+  {q:"In AKS, what is responsible for actually running container processes on a node?",
+   choices:["Kubelet","Scheduler","Controller Manager","Kube-proxy"],
+   correct:0},
+  {q:"Which of the following best describes the function of the kube-scheduler?",
+   choices:["It manages node operating system updates.","It assigns pods to nodes based on resource availability and constraints.","It handles pod networking and service routing.","It stores cluster configuration in etcd."],
+   correct:1},
+  {q:"In Azure CNI, which resource provides IP addresses to pods?",
+   choices:["The Azure Load Balancer","The AKS system node pool","The VNet subnet assigned as the node subnet","The default namespace in Kubernetes"],
+   correct:2},
+  {q:"What will happen if the Azure CNI node subnet runs out of available IP addresses?",
+   choices:["AKS automatically expands the subnet range","Pods will fail to start due to lack of IP assignment","Nodes will reuse existing IPs from other pods","AKS dynamically switches to Kubenet mode"],
+   correct:1},
+  {q:"Which AKS component ensures communication between services and pods across nodes?",
+   choices:["Kube-proxy","Azure Firewall","Network Security Group (NSG)","CoreDNS"],
+   correct:0},
+  {q:"Why is it not recommended to deploy workloads in the system node pool?",
+   choices:["It is used only for Windows-based workloads","It may cause resource contention affecting AKS system components","It lacks networking capabilities for application traffic","It cannot communicate with user node pools"],
+   correct:1},
+  {q:"What does Azure CNI allow pods to do that Kubenet does not?",
+   choices:["Share IP addresses between nodes","Get routable IPs from the Azure VNet for direct access to Azure resources","Run containers without IP assignment","Use private DNS zones automatically"],
+   correct:1},
+  {q:"Which AKS pricing tier provides a financially backed SLA for the control plane but not long-term Kubernetes version support?",
+   choices:["Free","Standard","Premium","Enterprise"],
+   correct:1},
+  {q:"What is the main purpose of Azure Kubernetes Fleet Manager?",
+   choices:["Managing updates and resources across multiple AKS clusters","Handling persistent storage and backup operations","Deploying Kubernetes add-ons automatically","Scaling pods inside a single AKS cluster"],
+   correct:0},
+  {q:"What component is responsible for maintaining the desired state of resources in a Kubernetes cluster?",
+   choices:["Scheduler","Controller Manager","API Server","Kubelet"],
+   correct:1},
+  {q:"In Azure CNI, where are pod IPs stored and managed on each node?",
+   choices:["In a local container bridge interface","As secondary IPs on the node's network interface (NIC)","Within the kube-proxy configuration file","In Azure DNS private zones"],
+   correct:1},
+  {q:"What happens when a control plane API server instance in AKS fails?",
+   choices:["The entire cluster becomes unavailable until it's replaced manually","Azure automatically replaces the failed API server instance","Nodes recreate pods to recover connectivity","The user must redeploy the AKS cluster"],
+   correct:1},
+  {q:"Which of the following correctly describes a Kubernetes Service?",
+   choices:["A process running inside a node that handles network routing","An abstraction that exposes a set of pods under a single, stable IP or DNS name","A YAML definition for a pod’s storage requirements","A configuration object used for defining security rules between namespaces"],
+   correct:1},
+  {q:"In a large AKS production deployment, why might you create multiple user node pools?",
+   choices:["To isolate workloads, apply specific VM SKUs, and scale independently","To reduce control plane cost and merge resource groups","To host redundant control planes for HA","To increase the subnet IP range automatically"],
+   correct:0}
+];
+
+const questionBox = document.getElementById('questionBox');
+const choicesBox = document.getElementById('choicesBox');
+const nextBtn = document.getElementById('nextBtn');
+const resultBox = document.getElementById('result');
+const quizBox = document.getElementById('quiz');
+const scoreText = document.getElementById('scoreText');
+const progressBar = document.getElementById('progressBar');
+const retryBtn = document.getElementById('retryBtn');
+
+let current = 0;
+let score = 0;
+let answered = false;
+
+function loadQuestion() {
+  const q = quizData[current];
+  questionBox.textContent = `${current + 1}. ${q.q}`;
+  choicesBox.innerHTML = '';
+  q.choices.forEach((choice, i) => {
+    const div = document.createElement('div');
+    div.classList.add('choice');
+    div.textContent = choice;
+    div.addEventListener('click', () => selectAnswer(i));
+    choicesBox.appendChild(div);
+  });
+  nextBtn.disabled = true;
+  answered = false;
+  updateProgress();
+}
+
+function selectAnswer(i) {
+  if (answered) return;
+  answered = true;
+  const q = quizData[current];
+  const allChoices = choicesBox.querySelectorAll('.choice');
+
+  allChoices.forEach((btn, index) => {
+    btn.classList.add('disabled');
+    if (index === q.correct) btn.classList.add('correct');
+    if (index === i && index !== q.correct) btn.classList.add('wrong');
+  });
+
+  if (i === q.correct) score++;
+  nextBtn.disabled = false;
+}
+
+function updateProgress() {
+  progressBar.style.width = `${(current / quizData.length) * 100}%`;
+}
+
+nextBtn.addEventListener('click', () => {
+  current++;
+  if (current < quizData.length) {
+    loadQuestion();
+  } else {
+    showResult();
+  }
+});
+
+function showResult() {
+  quizBox.style.display = 'none';
+  resultBox.style.display = 'block';
+  scoreText.textContent = `${score} / ${quizData.length}`;
+  progressBar.style.width = '100%';
+}
+
+retryBtn.addEventListener('click', () => {
+  current = 0;
+  score = 0;
+  quizBox.style.display = 'block';
+  resultBox.style.display = 'none';
+  loadQuestion();
+});
+
+loadQuestion();
+</script>
+</body>
+</html>
