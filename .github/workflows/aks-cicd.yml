@@ -26,7 +26,6 @@ jobs:
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       # ------------------------------
       # 2. Build Docker Image
       # ------------------------------
